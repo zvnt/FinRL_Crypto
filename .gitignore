@@ -6,3 +6,19 @@ __pycache__/
 .env
 .env.local
 .env.*.local
+
+# Training results and data
+train_results/
+data/
+plots_and_metrics/
+
+# Live trading logs
+live_trading_logs/
+live_trading.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.venv/

@@ -4,10 +4,10 @@ This script contains a set of functions for loading and processing data for trad
 It contains the following functions:
 
 load_validated_model: Loads the best trial from the pickle file in the specified directory and returns the best trial's attributes.
-download_CVIX: Downloads the CVIX dataframe from Yahoo finance and returns it.
+download_external_indicator: Creates external indicator data for backtesting.
 load_and_process_data: loads and process the trade data from the specified data folder and returns the data.
 
-After that, the large loop analyzes every result by creating an instance of an Alpaca environment and checking
+After that, the large loop analyzes every result by creating an instance of the CCXT environment and checking
 what the model would do through the environment using the new trading data
 
 Finally, the resulting backtests are analyzes for performance a performance metric per benchmark (EQW, S&P BCI) plus
@@ -22,7 +22,6 @@ import matplotlib.dates as mdates
 from config_main import *
 from function_finance_metrics import *
 from processor_Binance import BinanceProcessor
-from environment_Alpaca import CryptoEnvAlpaca
 from environment_CCXT import CryptoEnvCCXT
 from drl_agents.elegantrl_models import DRLAgent as DRLAgent_erl
 

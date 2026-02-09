@@ -18,7 +18,7 @@ the trade_end_date,
 the number of candles for training no_candles_for_train
 the validation no_candles_for_val
 the list of tickers TICKER_LIST,
-the minimum buy limits ALPACA_LIMITS,
+the minimum buy limits CRYPTO_LIMITS,
 the list of technical indicators TECHNICAL_INDICATORS_LIST.
 
 The function calculate_start_end_dates is used to compute the start and end dates for training and validation based on the number of candles and the selected time frame.
@@ -54,7 +54,6 @@ NUM_PATHS = 4
 N_GROUPS = NUM_PATHS + 1
 NUMBER_OF_SPLITS = nCr(N_GROUPS, N_GROUPS - K_TEST_GROUPS)
 
-print(NUMBER_OF_SPLITS)
 
 no_candles_for_train = 20000
 no_candles_for_val = 5000
@@ -70,19 +69,6 @@ TICKER_LIST = [
             #    'SOLUSDT',
                ]
 
-
-# Minimum buy limits
-ALPACA_LIMITS = np.array([0.01,
-                          0.10,
-                          0.0001,
-                          0.1,
-                          0.1,
-                          0.001,
-                          0.01,
-                          10,
-                          0.1,
-                          0.01
-                          ])
 
 # Minimum crypto limits for CCXT exchanges (BTC, ETH, etc.)
 CRYPTO_LIMITS = np.array([0.0001,  # BTC minimum (about $4)
@@ -175,5 +161,46 @@ def calculate_start_end_dates(candlewidth):
 
 
 TRAIN_START_DATE, TRAIN_END_DATE, VAL_START_DATE, VAL_END_DATE = calculate_start_end_dates(TIMEFRAME)
-print("TRAIN_START_DATE: ", TRAIN_START_DATE)
-print("VAL_END_DATE: ", VAL_END_DATE)
+
+
+# Live Trading Configuration
+#######################################################################################################
+#######################################################################################################
+
+LIVE_TRADING_CONFIG = {
+    # Exchange
+    'exchange': 'binance',            # 'binance' or 'bitget'
+    'market_type': 'spot',            # 'spot' or 'futures'
+    'timeframe': '5m',
+    'ticker_list': ['BTC/USDT', 'ETH/USDT'],
+
+    # Capital & leverage
+    'initial_capital': 1000,          # starting capital in USDT
+    'leverage': 1,                    # 1 = no leverage (spot), >1 for futures
+    'slippage_pct': 0.0005,           # 0.05% simulated slippage for paper trading
+
+    # Risk management
+    'max_position_pct': 0.25,         # max 25% of capital per asset
+    'stop_loss_pct': 0.05,            # 5% stop loss per position
+    'max_drawdown_pct': 0.15,         # 15% max portfolio drawdown kill switch
+    'daily_loss_limit_pct': 0.10,     # 10% daily loss limit
+    'max_margin_ratio': 0.80,         # 80% max margin usage (futures only)
+
+    # Execution
+    'order_type': 'market',           # 'market' or 'limit'
+    'paper_trading': True,            # safety: start in paper mode
+    'loop_interval_sec': 300,         # seconds between decisions (5 min)
+    'lookback_candles': 100,          # candles to fetch for state computation
+
+    # WebSocket price monitor (real-time stop-loss between intervals)
+    'enable_websocket': True,         # enable real-time price monitoring
+    'ws_check_interval_sec': 5,       # how often WS thread checks stop-loss
+
+    # Alerts (optional — set tokens to enable)
+    'telegram_bot_token': '',         # Telegram bot token
+    'telegram_chat_id': '',           # Telegram chat ID
+    'discord_webhook_url': '',        # Discord webhook URL
+
+    # Model
+    'model_result_dir': '',           # e.g. 'res_2025-12-07__01_28_01_model_CPCV_ppo_5m_50H_2k'
+}

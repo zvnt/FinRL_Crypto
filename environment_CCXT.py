@@ -1,5 +1,5 @@
 """The CryptoEnvCCXT class is a custom environment for trading multiple cryptocurrencies using CCXT library.
-This is a refactored version of environment_Alpaca.py adapted for crypto trading.
+Adapted for crypto trading via CCXT library.
 
 The class provides:
 - Multi-cryptocurrency trading support via CCXT
@@ -99,7 +99,7 @@ class CryptoEnvCCXT:  # custom env for crypto trading
         self.state_dim = 1 + self.price_array.shape[1] + self.tech_array.shape[1] * self.lookback
         self.action_dim = self.price_array.shape[1]
 
-        # Use CRYPTO_LIMITS instead of ALPACA_LIMITS
+        # Use CRYPTO_LIMITS for minimum order sizes
         if hasattr(CRYPTO_LIMITS, '__len__'):
             self.minimum_qty_crypto = (CRYPTO_LIMITS[:self.action_dim] * 1.1)  # 10% safety factor
         else:

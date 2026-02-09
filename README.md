@@ -1,153 +1,169 @@
-# FinRL_Crypto: Address Overfitting DRL Agents for Cryptocurrency Trading  
+# FinRL_Crypto: DRL-Based Cryptocurrency Trading Bot
 
-![Banner](https://user-images.githubusercontent.com/69801109/214294114-a718d378-6857-4182-9331-20869d64d3d9.png)  
+Deep Reinforcement Learning agents for cryptocurrency trading with **live trading support** on Binance and Bitget.
 
-For financial reinforcement learning (FinRL), we provide a way to address the dreaded overfitting trap and increase your chances of success in the wild world of cryptocurrency trading. Our approach has been tested on 10 different currencies and during a market crash period, and has proven to be more profitable than the competition. So, don't just sit there, join us on our journey to the top of the crypto mountain!  
+Based on the research paper: [Addressing Overfitting on Cryptocurrency Trading with DRL](https://arxiv.org/abs/2209.05559)
 
-## Paper  
-Our [paper](https://arxiv.org/abs/2209.05559)  
+## Features
 
-## How to Use FinRL_Crypto with Binance API  
+- **Train** DRL agents (PPO, A2C, DDPG, TD3, SAC) on historical crypto data
+- **Optimize** hyperparameters via Optuna (CPCV, KCV, Walk-Forward)
+- **Backtest** trained agents with overfitting analysis (PBO)
+- **Live trade** on Binance or Bitget with real or paper money
+- **Risk management**: stop-loss, drawdown kill switch, position limits
 
-This repository is ready for work with Binance API for cryptocurrency trading using Deep Reinforcement Learning (DRL).  
+## Requirements
 
-### 📋 What's Already Done  
-✅ **Updated Dependencies** - All packages are compatible with Python 3.8+ (and recommended for Python 3.10).  
-✅ **Fixed Deprecated Methods** - Code is compatible with new versions of pandas and numpy.  
-✅ **Added Error Handling** - Improved stability during execution.  
-✅ **Optimized Performance** - Replaced outdated pandas methods with more efficient alternatives.  
+- **Python 3.10+**
+- **TA-Lib** (see install instructions below)
+- Exchange API keys (Binance and/or Bitget)
 
-### 🔧 Requirements  
-- **Python 3.10** (Recommended version)  
-- Binance API keys  
+## Setup
 
-### 🎯 Setup  
+### 1. Install Dependencies
 
-#### 1. Install Dependencies  
-**For Python 3.10 (Recommended):**  
-```bash
-pip install -r requirements-python310.txt
-```
-
-**For Python 3.11+:**  
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 2. Configure Binance API Keys  
+**TA-Lib** must be installed separately:
+```bash
+# Windows: download wheel from https://github.com/cgohlke/talib-build/
+# Linux:
+sudo apt-get install libta-lib-dev && pip install TA-Lib
+# macOS:
+brew install ta-lib && pip install TA-Lib
+```
 
-1. Log in to your Binance account → **API Management**  
-2. Create new API keys  
-3. Open `config_api.py` and replace placeholders:  
+### 2. Configure API Keys
 
+Copy the example env file and fill in your keys:
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+```
+# Binance
+API_KEY_BINANCE=your_key
+API_SECRET_BINANCE=your_secret
+
+# Bitget (requires passphrase)
+API_KEY_BITGET=your_key
+API_SECRET_BITGET=your_secret
+API_PASSPHRASE_BITGET=your_passphrase
+```
+
+### 3. Configure Trading
+
+Edit `config_main.py`:
+- **TICKER_LIST**: Cryptocurrencies to trade (e.g., `['BTCUSDT', 'ETHUSDT']`)
+- **TIMEFRAME**: Candle interval (e.g., `'5m'`)
+- **LIVE_TRADING_CONFIG**: Live trading parameters (exchange, capital, risk limits)
+
+## Training Pipeline
+
+### Step 0: Download Data
+```bash
+python 0_dl_trainval_data.py   # Training/validation data
+python 0_dl_trade_data.py      # Backtest data
+```
+
+### Step 1: Optimize Hyperparameters
+```bash
+python 1_optimize_cpcv.py      # Combinatorial Purged Cross-Validation
+python 1_optimize_kcv.py       # K-Fold Cross-Validation
+python 1_optimize_wf.py        # Walk-Forward
+```
+
+### Step 2: Validate
+```bash
+python 2_validate.py
+```
+
+### Step 4: Backtest
+```bash
+python 4_backtest.py
+```
+
+### Step 5: PBO Analysis
+```bash
+python 5_pbo.py
+```
+
+## Live Trading
+
+### Step 6: Run Live Trading Bot
+```bash
+python 6_live_trade.py
+```
+
+**Before running live:**
+1. Set `model_result_dir` in `LIVE_TRADING_CONFIG` to your trained model directory
+2. Start with `paper_trading: True` (default) to test without real money
+3. Only set `paper_trading: False` after thorough paper testing
+
+### Live Trading Config (`config_main.py`)
 ```python
-API_KEY_BINANCE = 'YOUR_PUBLIC_API_KEY'
-API_SECRET_BINANCE = 'YOUR_SECRET_API_KEY'
+LIVE_TRADING_CONFIG = {
+    'exchange': 'binance',        # 'binance' or 'bitget'
+    'market_type': 'spot',
+    'timeframe': '5m',
+    'ticker_list': ['BTC/USDT', 'ETH/USDT'],
+    'initial_capital': 1000,
+    'paper_trading': True,        # SET TO False FOR REAL TRADING
+    'stop_loss_pct': 0.05,        # 5% per position
+    'max_drawdown_pct': 0.15,     # 15% portfolio kill switch
+    'max_position_pct': 0.25,     # 25% max per asset
+    'model_result_dir': 'res_...',
+}
 ```
 
-#### 3. Verify Configuration  
+### Supported Exchanges
 
-Main settings are configured in `config_main.py`:  
-- **TIMEFRAME**: `'5m'` - 5-minute candlesticks  
-- **TICKER_LIST**: List of cryptocurrencies for trading (e.g., `['BTC', 'ETH']`))  
-- **TECHNICAL_INDICATORS**: Technical indicators (MACD, RSI, CCI, DX)  
+| Exchange | API Key | Secret | Passphrase |
+|----------|---------|--------|------------|
+| Binance  | Yes     | Yes    | No         |
+| Bitget   | Yes     | Yes    | **Yes**    |
 
-## 🎯 Quick Start Guide  
+### Risk Management
 
-### 1. Download Data  
-```bash
-python 0_dl_trainval_data.py  # Download training/validation data
-python 0_dl_trade_data.py     # Download trade data
-```  
+- **Stop-loss**: Auto-sells position if it drops X% from entry
+- **Drawdown kill switch**: Stops all trading if portfolio drops X% from peak
+- **Position limits**: Never allocates more than X% to one asset
+- **Daily loss limit**: Stops buying if daily loss exceeds threshold
 
-### 2. Optimize Hyperparameters  
-Choose one of the following optimization schemes:  
-- **Combinatorial Purged Cross-validation**:  
-  ```bash
-  python 1_optimize_cpcv.py 
-  ```
-- **K-Fold Cross-validation**:  
-  ```bash
-  python 1_optimize_kcv.py 
-  ```
-- **Walk-forward validation**:  
-  ```bash
-  python 1_optimize_wf.py 
-  ```
+### Trade Logs
 
-### 3. Validate Trained Agents  
-```bash
-python 2_validate.py 
+All trades are logged to `./live_trading_logs/`:
+- `trades_*.csv` — every executed order
+- `portfolio_*.csv` — portfolio snapshots each cycle
+- `decisions_*.csv` — raw model actions vs filtered actions
+
+## Project Structure
+
+```
+config_api.py              — API keys (env vars)
+config_main.py             — Training + live trading config
+exchange_manager.py        — Unified exchange interface (Binance/Bitget)
+data_feed.py               — Live market data provider
+environment_CCXT.py        — Backtesting environment
+environment_live.py        — Live trading environment + risk management
+trade_logger.py            — Trade logging
+processor_Binance.py       — Historical data processor
+6_live_trade.py            — Live trading entry point
+drl_agents/                — DRL algorithms (PPO, A2C, DDPG, TD3, SAC)
+train/                     — ElegantRL training infrastructure
 ```
 
-### 4. Backtest Trained Agents  
-```bash
-python 4_backtest.py 
-```
+## Supported Cryptocurrencies
 
-## 🔍 Core Components  
+BTC, ETH, NEAR, LINK, LTC, MATIC, UNI, SOL, AAVE, AVAX — and any pair available on your exchange.
 
-### 📁 Project Files  
-- **`config_main.py`**: Main configuration file.  
-- **`config_api.py`**: Binance API keys.  
-- **`processor_Binance.py`**: Data processing for Binance API.  
-- **`environment_Alpaca.py`** (Note: Alpaca is a separate trading environment; this project focuses on Binance).  
-- **`drl_agents/`**: DRL algorithms (e.g., PPO, A2C, DDPG, TD3, SAC).  
+## Important Warnings
 
-### 💡 Supported Cryptocurrencies  
-- AAVE, AVAX, BTC, ETH, LINK, LTC, MATIC, NEAR, SOL, UNI  
-- New cryptocurrencies can be added to `config_main.py`.  
-
-### 📊 Technical Indicators  
-- **MACD (Moving Average Convergence Divergence)**  
-- **RSI (Relative Strength Index)**  
-- **CCI (Commodity Channel Index)**  
-- **DX (Directional Movement Index)**  
-
-## ⚠️ Important Notes  
-
-1. **API Keys**: Never store API keys in public repositories.  
-2. **Testing**: Test on a demo account first.  
-3. **Risks**: Cryptocurrency trading involves high risks.  
-4. **Versions**: Ensure you are using Python 3.8+.  
-
-## 🔧 Troubleshooting  
-
-### Error: "API keys not configured"  
-- Check `config_api.py`  
-- Ensure API keys are entered correctly  
-
-### Error: "No data returned"  
-- Check internet connectivity  
-- Ensure cryptocurrency symbols are correct  
-- Check Binance API rate limits  
-
-### Dependency Issues  
-```bash
-# Install TA-Lib (if needed)
-conda install -c conda-forge ta-lib  # For Anaconda
-# or for macOS:
-brew install ta-lib 
-```  
-
-## 📈 Additional Features  
-
-### Visualization of Results  
-Results are saved in the `/plots_and_metrics/` folder.  
-
-### Customizing Parameters  
-- Modify dates in `config_main.py`  
-- Tune technical indicators (e.g., MACD parameters)  
-- Adjust cryptocurrency lists in `config_main.py`  
-
-## 🆘 Support  
-
-If you encounter issues:  
-1. Check error logs for clues.  
-2. Verify all dependencies are installed (run `pip install -r requirements.txt` or `pip install -r requirements-python310.txt`).  
-3. Confirm Binance API keys are correctly configured in `config_api.py`.  
-
----
-
-**Ready to Go! 🚀**  
-This project is fully configured for cryptocurrency trading on Binance using advanced Deep Reinforcement Learning algorithms.
+1. **Never** commit API keys to version control
+2. **Always** test with paper trading first
+3. Cryptocurrency trading involves **significant financial risk**
+4. Past backtest performance does **not** guarantee future results
+5. Start with small capital amounts when going live

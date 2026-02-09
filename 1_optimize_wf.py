@@ -1,8 +1,8 @@
-"""This script is used for training and evaluating a reinforcement learning agent for trading on the Alpaca platform
+"""This script is used for training and evaluating a reinforcement learning agent for cryptocurrency trading
 using Optuna for hyperparameter optimization and joblib for parallel execution of trials.
 
 The script imports various modules including joblib, optuna, datetime, pickle, sys, distutils.dir_util,
-environment_Alpaca, function_CPCV, function_train_test, config_main.
+environment_CCXT, function_train_test, config_main.
 
 The script also contains a class 'bcolors' which is used to color the output text in the terminal.
 
@@ -33,7 +33,6 @@ from distutils.dir_util import copy_tree
 
 import pandas as pd
 
-from environment_Alpaca import CryptoEnvAlpaca
 from environment_CCXT import CryptoEnvCCXT
 from function_train_test import train_and_test
 from config_main import *

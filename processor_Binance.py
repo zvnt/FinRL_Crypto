@@ -47,7 +47,6 @@ from talib import RSI, MACD, CCI, DX, ROC, ULTOSC, WILLR, OBV, HT_DCPHASE
 
 from config_api import *
 import datetime as dt
-from processor_Yahoo import Yahoofinance
 try:
     from fracdiff.sklearn import FracdiffStat
 except ImportError:
@@ -184,17 +183,6 @@ class BinanceProcessor():
     def add_turbulence(self, df):
         print('Turbulence not supported yet. Return original DataFrame.')
 
-        return df
-
-    def add_5m_CVIX(self, df):
-        trade_start_date = self.start_date[:10]
-        trade_end_date = self.end_date[:10]
-        TIME_INTERVAL = '60m'
-        YahooProcessor = Yahoofinance('yahoofinance', trade_start_date, trade_end_date, TIME_INTERVAL)
-        CVOL_df = YahooProcessor.download_data(['CVOL-USD'])
-        CVOL_df.set_index('date', inplace=True)
-        CVOL_df = CVOL_df.resample('5Min').interpolate(method='linear')
-        df['CVIX'] = CVOL_df['close']
         return df
 
     def df_to_array(self, df, if_vix):

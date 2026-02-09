@@ -1,4 +1,4 @@
-"""This code is for training a reinforcement learning agent for trading cryptocurrencies using Optuna and Alpaca API.
+"""This code is for training a reinforcement learning agent for trading cryptocurrencies using Optuna and CCXT.
 It includes functions for setting up the environment, cross-validation, and training, as well as saving the best
 performing agent.
 
@@ -41,7 +41,6 @@ import os
 import sys
 
 from distutils.dir_util import copy_tree
-from environment_Alpaca import CryptoEnvAlpaca
 from environment_CCXT import CryptoEnvCCXT
 from function_CPCV import *
 from function_train_test import *
